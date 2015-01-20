@@ -1,0 +1,717 @@
+<!DOCTYPE html> 
+<html lang="es"> 
+<head> 
+	<title>Sudoku</title>
+	<script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="jquery.timer.js" type="text/javascript"></script>
+	<link href="SudokuStyle.css" rel="stylesheet" type="text/css" />
+</head>
+<script>
+
+var games = [];
+var solution = [];
+var playedGames = [];
+
+function loadBrick()
+{
+	var especificBrick;
+	for(var i = 0; i <= 8; i++)
+	{
+		for(var j = 0; j <= 8; j++)
+		{
+			borderToAdd = "";
+			if(i == 0 && j == 0)
+			{
+				borderToAdd = 'border-left-color: black; border-top-color: black;';
+				especificBrick = '<div class="brick" id="brick'+i.toString()+'-'+j.toString()+'" style="left: '+posBrick_x+'px; top: '+posBrick_y+'px;visibility: visible;'+borderToAdd+'"></div>';
+			}
+			else
+			{
+				if(i == 0)
+				{
+					borderToAdd += 'border-top-color: black;';
+				}
+				if(i == 8)
+				{
+					borderToAdd += 'border-bottom-color: black;';
+				}
+				if(j == 0)
+				{
+					borderToAdd += 'border-left-color: black;';
+				}
+				if(j == 8)
+				{
+					borderToAdd += 'border-right-color: black;';
+				}
+				if(j == 2 || j == 5)
+				{
+					borderToAdd += 'border-right-color: black;';
+				}
+				if(j == 3 || j == 6)
+				{
+					borderToAdd += 'border-left-color: black;';
+				}
+				if(i == 2 || i == 5)
+				{
+					borderToAdd += 'border-bottom-color: black;';
+				}
+				if(i == 3 || i == 6)
+				{
+					borderToAdd += 'border-top-color: black;';
+				}
+				
+				especificBrick += '<div class="brick" id="brick'+i.toString()+'-'+j.toString()+'" style="left: '+posBrick_x+'px; top: '+posBrick_y+'px;visibility: visible;'+borderToAdd+'"></div>';;
+			}
+			posBrick_x += 32;
+		}
+		posBrick_x = 0;
+		posBrick_y += 32;
+	}
+	$('#court').html(especificBrick);
+}
+
+/*
+function getGame()
+{
+	exit = 0;
+	do
+	{
+		randomGame = (1 + Math.floor(Math.random() * 100));
+		if($.inArray(randomGame,playedGames) == -1)
+		{
+			exit = 1;
+		}
+	} while (exit == 0);
+	return randomGame
+}
+*/
+
+function loadValues(numberOfGame)
+{
+	countOfValue = 0;
+	var vGame = games[numberOfGame];
+	for(var i = 1; i <= 9; i++)
+	{
+		for(var j = 1; j <= 9; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			if(vGame[countOfValue] != 0)
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="'+vGame[countOfValue]+'" disabled style="background: #CCC;"/>');
+			}
+			else
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="" style="background: #BBB;" maxlength="1" onKeyDown="winControl"/>');
+				$(tempNameIAndJ).children('input').keyup(winControl);
+			}
+			countOfValue++;
+		}
+	}
+}
+
+function drawSudoku(numberOfGrid,numberOfCount)
+{
+	vIAndJ = getIAndJ(numberOfGrid).split('-');
+	start_i = vIAndJ[0];
+	end_i = vIAndJ[1];
+	start_j = vIAndJ[2];
+	end_j = vIAndJ[3];
+	
+	countOfValue = numberOfCount;
+	for(var i = start_i ; i <= end_i; i++)
+	{
+		for(var j = start_j; j <= end_j; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			if(games[countOfValue] != 0)
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="'+games[countOfValue]+'" disabled style="background: #CCC;"/>');
+			}
+			else
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="" style="background: #BBB;" maxlength="1" onKeyDown="winControl"/>');
+				$(tempNameIAndJ).children('input').keyup(winControl);
+			}
+			countOfValue++;
+		}
+	}
+}
+
+function loadValues2()
+{
+	drawSudoku(1,0);
+	drawSudoku(2,9);
+	//drawSudoku(3,18);
+	//drawSudoku(4,27);
+	//drawSudoku(5,36);
+	//drawSudoku(6,45);
+	/*
+	countOfValue = 0;
+	//var vGame = games[numberOfGame];
+	for(var i = 0 ; i <= 2; i++)
+	{
+		for(var j = 0; j <= 2; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			if(games[countOfValue] != 0)
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="'+games[countOfValue]+'" disabled style="background: #CCC;"/>');
+			}
+			else
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="" style="background: #BBB;" maxlength="1" onKeyDown="winControl"/>');
+				$(tempNameIAndJ).children('input').keyup(winControl);
+			}
+			countOfValue++;
+		}
+	}
+	/*
+	for(var i = 1; i <= 9; i++)
+	{
+		for(var j = 1; j <= 9; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			if(games[countOfValue] != 0)
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="'+games[countOfValue]+'" disabled style="background: #CCC;"/>');
+			}
+			else
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="" style="background: #BBB;" maxlength="1" onKeyDown="winControl"/>');
+				$(tempNameIAndJ).children('input').keyup(winControl);
+			}
+			countOfValue++;
+		}
+	}
+	*/
+}
+
+/*
+function loadGames()
+{
+	games[0] = [0,4,0,1,5,0,0,8,3,0,3,0,0,6,0,5,0,0,6,0,0,0,0,0,0,0,9,0,5,0,0,0,0,0,0,0,1,0,0,7,0,8,0,0,2,0,0,0,0,0,0,0,6,0,5,0,0,0,0,0,0,0,4,0,0,4,0,8,0,0,7,0,8,6,0,0,2,4,0,9,0];
+	solution[0] = [7,4,9,1,5,2,6,8,3,2,3,1,8,6,9,5,4,7,6,8,5,4,7,3,2,1,9,4,5,2,9,1,6,7,3,8,1,9,6,7,3,8,4,5,2,3,7,8,2,4,5,9,6,1,5,1,3,6,9,7,8,2,4,9,2,4,5,8,1,3,7,6,8,6,7,3,2,4,1,9,5];
+	games[1] = [9,0,0,4,0,0,5,0,2,0,0,1,0,2,0,9,0,0,0,7,0,0,0,0,8,0,0,3,0,0,0,7,0,0,5,0,0,0,7,0,8,0,3,0,0,0,2,0,0,6,0,0,0,1,0,0,6,0,0,0,0,4,0,0,0,4,0,3,0,1,0,0,2,0,8,0,0,1,0,0,7];
+	solution[1] = [9,8,3,4,1,7,5,6,2,6,4,1,8,2,5,9,7,3,5,7,2,6,9,3,8,1,4,3,6,9,1,7,2,4,5,8,4,1,7,5,8,9,3,2,6,8,2,5,3,6,4,7,9,1,1,3,6,7,5,8,2,4,9,7,9,4,2,3,6,1,8,5,2,5,8,9,4,1,6,3,7];
+	games[2] = [1,0,0,0,0,8,0,0,9,0,0,2,0,0,0,0,0,8,0,8,0,5,4,9,0,0,0,0,4,0,2,0,0,9,0,0,3,0,9,0,0,0,2,0,1,0,0,1,0,0,5,0,4,0,0,0,0,9,1,2,0,3,0,7,0,0,0,0,0,1,0,0,2,0,0,7,0,4,0,0,6];
+	solution[2] = [1,3,4,6,2,8,5,7,9,9,5,2,1,3,7,4,6,8,6,8,7,5,4,9,3,1,2,5,4,6,2,7,1,9,8,3,3,7,9,4,8,6,2,5,1,8,2,1,3,9,5,6,4,7,4,6,8,9,1,2,7,3,5,7,9,5,8,6,3,1,2,4,2,1,3,7,5,4,8,9,6];
+	games[3] = [];
+	solution[3] = [];
+	games[4] = [];
+	solution[4] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	games[1] = [];
+	solution[1] = [];
+	
+}
+*/
+
+function formatString(stringToFormat)
+{
+	vStringToFormat = stringToFormat.split('-');
+	/*Control para que me separe cada nueve elementos
+	for(var i = 0; i < 9; i++)
+	{
+	
+	}*/
+	for(var i = 0; i < (vStringToFormat.length - 1); i++)
+	{
+		games.push(vStringToFormat[i]);
+	}
+}
+
+function fileControl(numberOfFile)
+{
+	if($.inArray(numberOfFile,vFile) == -1)
+	{
+		position = numberOfFile;
+		vFile.push(numberOfFile);
+		vFileValue.push("0,0,0,0,0,0,0,0,0");
+	}
+	else
+	{
+		position = $.inArray(numberOfFile,vFile);
+	}
+	return position;
+}
+
+function columnControl(numberOfColumn)
+{
+	if($.inArray(numberOfColumn,vColumn) == -1)
+	{
+		position = numberOfColumn;
+		vColumn.push(numberOfColumn);
+		vColumnValue.push("0,0,0,0,0,0,0,0,0");
+	}
+	else
+	{
+		position = $.inArray(numberOfColumn,vColumn);
+	}
+	return position;
+}
+
+function getArrayOfGrid()
+{
+	count = 0;
+	restOfNumbers.length = 0;
+	for(var i = 1; i <= 9; i++)
+	{
+		if($.inArray(i,vGrid) == -1)
+		{
+			if($.inArray(i,vFoundedNumbers) == -1)
+			{
+				count++;
+				restOfNumbers.push(i);
+			}
+		}
+	}
+	return count;
+}
+
+function getIAndJ(numberOfGrid)
+{
+	switch(numberOfGrid)
+	{
+		case 1:
+			start_i = 0;
+			start_j = 0;
+			end_i = 2;
+			end_j = 2;
+			break
+		case 2:
+			start_i = 0;
+			start_j = 3;
+			end_i = 2;
+			end_j = 5;
+			break
+		case 3:
+			start_i = 0;
+			start_j = 6;
+			end_i = 2;
+			end_j = 8;
+			break
+		case 4:
+			start_i = 3;
+			start_j = 0;
+			end_i = 5;
+			end_j = 2;
+			break
+		case 5:
+			start_i = 3;
+			start_j = 3;
+			end_i = 5;
+			end_j = 5;
+			break
+		case 6:
+			start_i = 3;
+			start_j = 6;
+			end_i = 5;
+			end_j = 8;
+			break
+		case 7:
+			start_i = 6;
+			start_j = 0;
+			end_i = 8;
+			end_j = 2;
+			break
+		case 8:
+			start_i = 6;
+			start_j = 3;
+			end_i = 8;
+			end_j = 5;
+			break
+		case 9:
+			start_i = 6;
+			start_j = 6;
+			end_i = 8;
+			end_j = 8;
+			break
+	}
+	return start_i+'-'+end_i+'-'+start_j+'-'+end_j;
+}
+
+function loadGrid(numberOfGrid)
+{
+	cantOfTry = 0;
+	vGrid.length = 0;
+	vFoundedNumbers.length = 0;
+	
+	vIAndJ = getIAndJ(numberOfGrid).split('-');
+	start_i = vIAndJ[0];
+	end_i = vIAndJ[1];
+	start_j = vIAndJ[2];
+	end_j = vIAndJ[3];
+	
+	for(var i = start_i; i <= end_i; i++)
+	{
+		for(var j = start_j; j <= end_j; j++)
+		{
+			positionInArrayFile = fileControl(i);
+			positionInArrayColumn = columnControl(j);
+			
+			cantOfRandom = getArrayOfGrid();
+			randomValue = (Math.floor(Math.random() * cantOfRandom));
+			randomNumber = restOfNumbers[randomValue];
+			if(cantOfRandom == 0)
+			{
+				//loadGrid(numberOfGrid);
+				newGame();
+				return false;
+			}
+			fileToDecode = vFileValue[positionInArrayFile];
+			columnToDecode = vColumnValue[positionInArrayColumn];
+			if((decodeFile(randomNumber,fileToDecode,positionInArrayFile) == true) && (decodeColumn(randomNumber, columnToDecode,positionInArrayColumn) == true))
+			{
+				vGrid.push(randomNumber);
+				sudokuString += randomNumber + '-';
+				vFoundedNumbers.length = 0;
+				//cantOfTry = 0;
+			}
+			else
+			{
+				if(j != start_j)
+				{
+					j--;
+				}
+				else
+				{
+					i--;
+					j = end_j;
+					break;
+				}
+				cantOfTry++;
+				vFoundedNumbers.push(randomNumber);
+			}
+			if(cantOfTry == 5)
+			{
+				newGame();
+				return false;
+				//loadGrid(numberOfGrid);
+			}
+		}
+	}
+}
+
+var vFile = [];
+var vFileValue = [];
+var vColumn = [];
+var vColumnValue = [];
+var restOfNumbers = [];
+var vGrid = [];
+var vFoundedNumbers = [];
+sudokuString = "";
+
+function generateSudoku()
+{
+	cantOfTry = 0;
+	sudokuReady = 0;
+	vFile.length = 0;
+	vFileValue.length = 0;
+	vColumn.length = 0;
+	vColumnValue.length = 0;
+	restOfNumbers.length = 0;
+	vGrid.length = 0;
+	vFoundedNumbers.length = 0;
+	/*
+	vFile = [];
+	vFileValue = [];
+	vColumn = [];
+	vColumnValue = [];
+	restOfNumbers = [];
+	vGrid = [];
+	vFoundedNumbers = [];	
+	/*
+	for(var i = 0; i <= 2; i++)
+	{
+		for(var j = 0; j <= 2; j++)
+		{
+			positionInArrayFile = fileControl(i);
+			positionInArrayColumn = columnControl(i);
+			
+			cantOfRandom = getArrayOfGrid();
+			randomValue = (Math.floor(Math.random() * cantOfRandom));
+			randomNumber = restOfNumbers[randomValue];
+			
+			exitDo = 0;
+			*/
+			/*do
+			{
+				randomNumber = (1 + Math.floor(Math.random() * 9));
+				if($.inArray(randomNumber, lastCameUp) == -1)
+				{
+					lastCameUp.push(randomNumber);
+					exitDo = 1;
+				}
+			} while (exitDo == 0);
+			
+			if(lastCameUp.length > 3)
+			{
+				lastCameUp.splice(0,1);
+			}
+			*/
+			/*
+			fileToDecode = vFileValue[positionInArrayFile];
+			columnToDecode = vColumnValue[positionInArrayColumn];
+			if((decodeFile(randomNumber,fileToDecode,positionInArrayFile) == true) && (decodeColumn(randomNumber, columnToDecode,positionInArrayColumn) == true))
+			{
+				vGrid.push(randomNumber);
+				sudokuString += randomNumber + '-';
+			}
+			else
+			{
+				if(j != 0)
+				{
+					j--;
+				}
+				else
+				{
+					i--;
+					j = 2;
+					break;
+				}
+				cantOfTry++;
+			}
+			if(cantOfTry == 10)
+			{
+				cantOfTry = "Prueba";
+			}
+		}
+	}
+	*/
+	loadGrid(1);
+	loadGrid(2);
+	loadGrid(3);
+	loadGrid(4);
+	//loadGrid(5);
+	//loadGrid(6);
+	
+	formatString(sudokuString);
+}
+
+function decodeFile(number, file, posFileValue)
+{
+	var vFileTemp = file.split(',');
+	if($.inArray((number.toString()),vFileTemp) != -1)
+	{
+		return false;
+	}
+	else
+	{
+		positionToReplace = $.inArray("0",vFileTemp);
+		vFileTemp[positionToReplace] = number.toString();
+	}
+	stringToFileValue = "";
+	for(var i = 0; i <= 8; i++)
+	{
+		if(i == 0)
+		{
+			stringToFileValue = vFileTemp[i];
+		}
+		if(i != 0)
+		{
+			stringToFileValue += ','+vFileTemp[i];
+		}
+	}
+	vFileValue[posFileValue] = stringToFileValue;
+	return true;
+}
+
+function decodeColumn(number, column, posColumnValue)
+{
+	var vColumnTemp = column.split(',');
+	if($.inArray((number.toString()), vColumnTemp) != -1)
+	{
+		return false;
+	}
+	else
+	{
+		positionToReplace = $.inArray("0",vColumnTemp);
+		vColumnTemp[positionToReplace] = number.toString();
+	}
+	stringToColumnValue = "";
+	for(var i = 0; i <= 8; i++)
+	{
+		if(i == 0)
+		{
+			stringToColumnValue = vColumnTemp[i];
+		}
+		if(i != 0)
+		{
+			stringToColumnValue += ','+vColumnTemp[i];
+		}
+	}
+	vColumnValue[posColumnValue] = stringToColumnValue;
+	return true;
+}
+
+function newGame()
+{
+	generateSudoku();
+	posBrick_x = 0;
+	posBrick_y = 0;
+	selectedGame = 0;
+	loadBrick();
+	//loadGames();
+	//loadValues(getGame());
+	//loadValues(selectedGame);
+	loadValues2();
+}
+
+function winControl()
+{
+	countOfValue = 0;
+	solutionOfGame = solution[selectedGame];
+	win = 1;
+	for(var i = 1; i <= 9; i++)
+	{
+		for(var j = 1; j <= 9; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			valueOfBrick = parseInt($(tempNameIAndJ).children('input').val());
+			if(valueOfBrick != solutionOfGame[countOfValue])
+			{
+				win = 0;
+			}
+			countOfValue++;
+		}
+	}
+	if(win == 1)
+	{
+		playedGames.push(selectedGame);
+		winGame();
+	}
+}
+
+function winGame()
+{
+	for(var i = 1; i <= 9; i++)
+	{
+		for(var j = 1; j <= 9; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			$(tempNameIAndJ).children('input').prop('disabled',true);
+		}
+	}
+}
+
+$(document).ready(function (){
+
+	newGame();
+	var timer = $.timer(function (){
+		
+		//winControl();
+		
+	},20,true);
+	
+
+});
+</script>
+<body>
+	<div id="headCourt">
+		<div id="player">
+			<span id="playerText"></span>
+			<br />
+			<span id="playerLife"></span>
+		</div>
+		<div id="reset">
+			<input type="button" id="buttonReset" name="reset" value="Reset"/>
+		</div>
+		<div id="computer">
+			<span id="computerText" align="center"></span>
+			<br />
+			<span id="computerLife"></span>
+		</div>
+	</div>
+	<div id="court">		
+	</div>	
+</body> 
+</html>
