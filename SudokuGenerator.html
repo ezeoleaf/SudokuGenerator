@@ -6,6 +6,121 @@
 	<script src="jquery.timer.js" type="text/javascript"></script>
 	<link href="SudokuStyle.css" rel="stylesheet" type="text/css" />
 </head>
+<script language="javascript">
+var sud=new Array(9);
+for(var i = 0; i < 9; i++){
+	sud[i] = new Array(9);	
+}
+var aux=new Array(9);
+for(var i = 0; i < 9; i++){
+	aux[i] = new Array(9);	
+}
+function generarSudoku(){
+	for(var i = 0; i < 9; i++){
+		for(var j = 0; j < 9; j++){
+			if(Math.random()*10 > 5){ // Si cambias el 5 es decir lo incrementas es mas dificil y si lo disminuyes mas fácil
+				rellenarCelda(i , j);
+			}else{
+				sud[i][j] = "0";
+			}
+		}
+	}
+	for(var i = 0; i < 9; i++){
+		switch(i){
+			case 0: case 3: case 6:
+				var cas = 0;
+				var k = 0;
+				var i2 = i;
+				while(cas < 3){
+					for(var j = 0; j < 3; j++){
+						aux[i2][j] = sud[i][k];
+						k++;
+					}
+					cas++;
+					i2++;
+				}
+			break;
+			case 1: case 4: case 7: 
+				var cas = 0;
+				var k = 0;
+				var i2 = i-1;
+				while(cas < 3){
+					for(var j = 3; j < 6; j++){
+						aux[i2][j] = sud[i][k];
+						k++;
+					}
+					cas++;
+					i2++;
+				}
+			break;
+			case 2: case 5: case 8: 
+				var cas = 0;
+				var k = 0;
+				var i2 = i-2;
+				while(cas < 3){
+					for(var j = 6; j < 9; j++){
+						aux[i2][j] = sud[i][k];
+						k++;
+					}
+					cas++;
+					i2++;
+				}
+			break;
+			default:
+				alert('Error');
+		    break;
+		}
+	}
+	for(var i = 0; i < 9; i++){
+		for(var j = 0; j < 9; j++){
+			if(aux[i][j] != 0){
+				limpiarSudoku(i,j);
+			}else{
+				aux[i][j] = '-';
+			}
+		}
+	}
+}
+function rellenarCelda(i , j){
+	var num = parseInt((Math.random()*9)+1);
+	if(comprobarCasilla(num,i,j) == false){
+		sud[i][j] = "0";
+	}else{
+		sud[i][j] = num;
+	}
+}
+function limpiarSudoku(i , j){
+	for(var k = 0; k < 9; k++){
+		if(aux[i][k] == aux[i][j] && k != j){
+			aux[i][k]="-";
+		}
+	}
+	for(var k = 0; k < 9; k++){
+		if(aux[k][j] == aux[i][j] && k != i){
+			aux[k][j]="-";
+		}
+	}
+}
+function comprobarCasilla(num,i,j){
+	for(var k = 0; k < 9; k++){
+		if(sud[i][k] == num){
+			return false;
+		}
+	}
+	return true;
+}
+function imprimirSudoku(){
+	document.write("<br>");
+	for(var i = 0; i < 9; i++){
+		for(var j = 0; j < 9; j++){
+			document.write(aux[i][j]+" ");
+		}
+		document.write("<br>");
+	}
+}
+generarSudoku();
+imprimirSudoku();
+</script>
 <script>
 
 var games = [];
@@ -185,115 +300,6 @@ function loadValues2()
 	}
 	*/
 }
-
-/*
-function loadGames()
-{
-	games[0] = [0,4,0,1,5,0,0,8,3,0,3,0,0,6,0,5,0,0,6,0,0,0,0,0,0,0,9,0,5,0,0,0,0,0,0,0,1,0,0,7,0,8,0,0,2,0,0,0,0,0,0,0,6,0,5,0,0,0,0,0,0,0,4,0,0,4,0,8,0,0,7,0,8,6,0,0,2,4,0,9,0];
-	solution[0] = [7,4,9,1,5,2,6,8,3,2,3,1,8,6,9,5,4,7,6,8,5,4,7,3,2,1,9,4,5,2,9,1,6,7,3,8,1,9,6,7,3,8,4,5,2,3,7,8,2,4,5,9,6,1,5,1,3,6,9,7,8,2,4,9,2,4,5,8,1,3,7,6,8,6,7,3,2,4,1,9,5];
-	games[1] = [9,0,0,4,0,0,5,0,2,0,0,1,0,2,0,9,0,0,0,7,0,0,0,0,8,0,0,3,0,0,0,7,0,0,5,0,0,0,7,0,8,0,3,0,0,0,2,0,0,6,0,0,0,1,0,0,6,0,0,0,0,4,0,0,0,4,0,3,0,1,0,0,2,0,8,0,0,1,0,0,7];
-	solution[1] = [9,8,3,4,1,7,5,6,2,6,4,1,8,2,5,9,7,3,5,7,2,6,9,3,8,1,4,3,6,9,1,7,2,4,5,8,4,1,7,5,8,9,3,2,6,8,2,5,3,6,4,7,9,1,1,3,6,7,5,8,2,4,9,7,9,4,2,3,6,1,8,5,2,5,8,9,4,1,6,3,7];
-	games[2] = [1,0,0,0,0,8,0,0,9,0,0,2,0,0,0,0,0,8,0,8,0,5,4,9,0,0,0,0,4,0,2,0,0,9,0,0,3,0,9,0,0,0,2,0,1,0,0,1,0,0,5,0,4,0,0,0,0,9,1,2,0,3,0,7,0,0,0,0,0,1,0,0,2,0,0,7,0,4,0,0,6];
-	solution[2] = [1,3,4,6,2,8,5,7,9,9,5,2,1,3,7,4,6,8,6,8,7,5,4,9,3,1,2,5,4,6,2,7,1,9,8,3,3,7,9,4,8,6,2,5,1,8,2,1,3,9,5,6,4,7,4,6,8,9,1,2,7,3,5,7,9,5,8,6,3,1,2,4,2,1,3,7,5,4,8,9,6];
-	games[3] = [];
-	solution[3] = [];
-	games[4] = [];
-	solution[4] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	games[1] = [];
-	solution[1] = [];
-	
-}
-*/
 
 function formatString(stringToFormat)
 {
@@ -568,9 +574,9 @@ function generateSudoku()
 	}
 	*/
 	loadGrid(1);
-	loadGrid(2);
-	loadGrid(3);
-	loadGrid(4);
+	//loadGrid(2);
+	//loadGrid(3);
+	//loadGrid(4);
 	//loadGrid(5);
 	//loadGrid(6);
 	
