@@ -7,6 +7,7 @@
 	<link href="SudokuStyle.css" rel="stylesheet" type="text/css" />
 </head>
 <script language="javascript">
+/*
 var sud=new Array(9);
 for(var i = 0; i < 9; i++){
 	sud[i] = new Array(9);	
@@ -120,6 +121,7 @@ function imprimirSudoku(){
 }
 generarSudoku();
 imprimirSudoku();
+*/
 </script>
 <script>
 
@@ -233,6 +235,7 @@ function drawSudoku(numberOfGrid,numberOfCount)
 	end_j = vIAndJ[3];
 	
 	countOfValue = numberOfCount;
+	
 	for(var i = start_i ; i <= end_i; i++)
 	{
 		for(var j = start_j; j <= end_j; j++)
@@ -250,6 +253,27 @@ function drawSudoku(numberOfGrid,numberOfCount)
 			countOfValue++;
 		}
 	}
+	
+	/*
+	countOfValue = 0;
+	for(var i = 0; i <= 8; i++)
+	{
+		for(var j = 0; j <= 8; j++)
+		{
+			tempNameIAndJ = '#brick'+i.toString()+'-'+j.toString();
+			if(games[countOfValue] != 0)
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="'+games[countOfValue]+'" disabled style="background: #CCC;"/>');
+			}
+			else
+			{
+				$(tempNameIAndJ).html('<input class="valueOfBrick" type="text" value="" style="background: #BBB;" maxlength="1" onKeyDown="winControl"/>');
+				$(tempNameIAndJ).children('input').keyup(winControl);
+			}
+			countOfValue++;
+		}
+	}
+	*/
 }
 
 function loadValues2()
@@ -301,17 +325,26 @@ function loadValues2()
 	*/
 }
 
-function formatString(stringToFormat)
+function formatString()
 {
-	vStringToFormat = stringToFormat.split('-');
+	//vStringToFormat = stringToFormat.split('-');
 	/*Control para que me separe cada nueve elementos
 	for(var i = 0; i < 9; i++)
 	{
 	
-	}*/
+	}
 	for(var i = 0; i < (vStringToFormat.length - 1); i++)
 	{
 		games.push(vStringToFormat[i]);
+	}
+	*/
+	for(var i = 1; i <= (sudokuString.length - 1);i++)
+	{
+		vStringToFormat = sudokuString[i].split('-');
+		for(var j = 0; j < (vStringToFormat.length - 1); j++)
+		{
+			games.push(vStringToFormat[j]);
+		}	
 	}
 }
 
@@ -320,8 +353,12 @@ function fileControl(numberOfFile)
 	if($.inArray(numberOfFile,vFile) == -1)
 	{
 		position = numberOfFile;
+		vFile[numberOfFile] = (numberOfFile);
+		vFileValue[numberOfFile] = ("0,0,0,0,0,0,0,0,0");
+		/*
 		vFile.push(numberOfFile);
 		vFileValue.push("0,0,0,0,0,0,0,0,0");
+		*/
 	}
 	else
 	{
@@ -427,15 +464,16 @@ function getIAndJ(numberOfGrid)
 
 function loadGrid(numberOfGrid)
 {
+	sudokuStringToAdd = "";
 	cantOfTry = 0;
 	vGrid.length = 0;
 	vFoundedNumbers.length = 0;
-	
 	vIAndJ = getIAndJ(numberOfGrid).split('-');
-	start_i = vIAndJ[0];
-	end_i = vIAndJ[1];
-	start_j = vIAndJ[2];
-	end_j = vIAndJ[3];
+	start_i = parseInt(vIAndJ[0]);
+	end_i = parseInt(vIAndJ[1]);
+	start_j = parseInt(vIAndJ[2]);
+	end_j = parseInt(vIAndJ[3]);
+	doagain = 0;
 	
 	for(var i = start_i; i <= end_i; i++)
 	{
@@ -449,16 +487,17 @@ function loadGrid(numberOfGrid)
 			randomNumber = restOfNumbers[randomValue];
 			if(cantOfRandom == 0)
 			{
-				//loadGrid(numberOfGrid);
-				newGame();
-				return false;
+				doagain = 1;
+				j = end_j + 1;
+				i = end_i + 1;
+				continue;
 			}
 			fileToDecode = vFileValue[positionInArrayFile];
 			columnToDecode = vColumnValue[positionInArrayColumn];
 			if((decodeFile(randomNumber,fileToDecode,positionInArrayFile) == true) && (decodeColumn(randomNumber, columnToDecode,positionInArrayColumn) == true))
 			{
 				vGrid.push(randomNumber);
-				sudokuString += randomNumber + '-';
+				sudokuStringToAdd += randomNumber + '-';
 				vFoundedNumbers.length = 0;
 				//cantOfTry = 0;
 			}
@@ -472,19 +511,38 @@ function loadGrid(numberOfGrid)
 				{
 					i--;
 					j = end_j;
-					break;
 				}
 				cantOfTry++;
 				vFoundedNumbers.push(randomNumber);
 			}
 			if(cantOfTry == 5)
 			{
-				newGame();
-				return false;
-				//loadGrid(numberOfGrid);
+				doagain = 1;
+				j = end_j + 1;
+				i = end_i + 1;
+				continue;
 			}
 		}
 	}
+	
+	if(doagain == 1)
+	{
+		if((numberOfGrid - 1) > 0)
+		{
+			vFile.length = 0;
+			vColumn.length = 0;
+			nextGrid = (numberOfGrid - 1)
+		}
+		else
+		{
+			//newGame();
+		}
+	}
+	else
+	{
+		nextGrid = numberOfGrid + 1;
+	}
+	sudokuString[numberOfGrid] = sudokuStringToAdd;
 }
 
 var vFile = [];
@@ -494,7 +552,8 @@ var vColumnValue = [];
 var restOfNumbers = [];
 var vGrid = [];
 var vFoundedNumbers = [];
-sudokuString = "";
+var sudokuString = [];
+nextGrid = 0;
 
 function generateSudoku()
 {
@@ -507,80 +566,27 @@ function generateSudoku()
 	restOfNumbers.length = 0;
 	vGrid.length = 0;
 	vFoundedNumbers.length = 0;
-	/*
-	vFile = [];
-	vFileValue = [];
-	vColumn = [];
-	vColumnValue = [];
-	restOfNumbers = [];
-	vGrid = [];
-	vFoundedNumbers = [];	
-	/*
-	for(var i = 0; i <= 2; i++)
+	nextGrid = 1;
+	do
 	{
-		for(var j = 0; j <= 2; j++)
+		if(nextGrid == 3)
 		{
-			positionInArrayFile = fileControl(i);
-			positionInArrayColumn = columnControl(i);
-			
-			cantOfRandom = getArrayOfGrid();
-			randomValue = (Math.floor(Math.random() * cantOfRandom));
-			randomNumber = restOfNumbers[randomValue];
-			
-			exitDo = 0;
-			*/
-			/*do
-			{
-				randomNumber = (1 + Math.floor(Math.random() * 9));
-				if($.inArray(randomNumber, lastCameUp) == -1)
-				{
-					lastCameUp.push(randomNumber);
-					exitDo = 1;
-				}
-			} while (exitDo == 0);
-			
-			if(lastCameUp.length > 3)
-			{
-				lastCameUp.splice(0,1);
-			}
-			*/
-			/*
-			fileToDecode = vFileValue[positionInArrayFile];
-			columnToDecode = vColumnValue[positionInArrayColumn];
-			if((decodeFile(randomNumber,fileToDecode,positionInArrayFile) == true) && (decodeColumn(randomNumber, columnToDecode,positionInArrayColumn) == true))
-			{
-				vGrid.push(randomNumber);
-				sudokuString += randomNumber + '-';
-			}
-			else
-			{
-				if(j != 0)
-				{
-					j--;
-				}
-				else
-				{
-					i--;
-					j = 2;
-					break;
-				}
-				cantOfTry++;
-			}
-			if(cantOfTry == 10)
-			{
-				cantOfTry = "Prueba";
-			}
+			sudokuReady = 1;
 		}
-	}
-	*/
-	loadGrid(1);
+		else
+		{
+			loadGrid(nextGrid);
+		}
+	} while(sudokuReady == 0);
+	//loadGrid(1);
 	//loadGrid(2);
 	//loadGrid(3);
 	//loadGrid(4);
 	//loadGrid(5);
 	//loadGrid(6);
 	
-	formatString(sudokuString);
+	//formatString(sudokuString);
+	formatString();
 }
 
 function decodeFile(number, file, posFileValue)
@@ -692,12 +698,6 @@ function winGame()
 $(document).ready(function (){
 
 	newGame();
-	var timer = $.timer(function (){
-		
-		//winControl();
-		
-	},20,true);
-	
 
 });
 </script>
